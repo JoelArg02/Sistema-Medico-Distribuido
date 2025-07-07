@@ -1,0 +1,62 @@
+server:
+  port: 8000
+
+spring:
+  application:
+    name: API-GATEWAY
+
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+
+      actuator:
+        verbose:
+          enabled: true
+
+      routes:
+        - id: servicio-carenotifier
+          uri: lb://SERVICIO-CARENOTIFIER
+          predicates:
+            - Path=/carenotifier/**
+          filters:
+            - StripPrefix=1
+
+        - id: servicio-patientdatacollector
+          uri: lb://SERVICIO-PATIENTDATACOLLECTOR
+          predicates:
+            - Path=/vital-signs/**
+          filters:
+            - StripPrefix=1
+
+        - id: servicio-healthanalyzer
+          uri: lb://SERVICIO-HEALTHANALYZER
+          predicates:
+            - Path=/health/**
+          filters:
+            - StripPrefix=1
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoint:
+    gateway:
+      enabled: true
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: gateway
